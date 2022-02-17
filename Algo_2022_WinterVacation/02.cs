@@ -78,25 +78,32 @@ namespace Algo_2022_WinterVacation
                 switch (input)
                 {
                     case 1:
+                        Clear();
                         WriteStrLine();
                         break;
                     case 2:
+                        Clear();
                         RemoveStrLine();
                         break;
                     case 3:
+                        Clear();
                         InputRandomData();
                         break;
                     case 4:
+                        Clear();
                         PrintAll();
                         break;
                     case 5:
+                        Clear();
                         ClearStr();
                         break;
                     case 6:
+                        Clear();
                         PrintStr();
                         break;
                     default:
                         WriteLine("입력값이 잘못되었습니다!");
+                        Clear();
                         break;
                 }
             }
@@ -197,7 +204,7 @@ namespace Algo_2022_WinterVacation
                 return;
             }
 
-            if(strs.Count < line)
+            if(line > 0 && line < strs.Count)
             {
                 WriteLine("삭제하시려는 내용은 \n" + strs[line] + "입니다.");
                 if (GetAnswer("삭제하시겠습니까?"))
@@ -243,7 +250,7 @@ namespace Algo_2022_WinterVacation
 
             Write("몇번째 줄을 출력하시겠습니까? ( 입력 값은 0번부터 시작합니다 ) : "); 
             
-            if(int.TryParse(ReadLine(), out line))
+            if(!int.TryParse(ReadLine(), out line))
             {
                 WriteLine("숫자 값을 입력해주십시오.");
                 PrintStr();
