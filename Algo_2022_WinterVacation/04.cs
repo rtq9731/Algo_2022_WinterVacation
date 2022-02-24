@@ -79,35 +79,25 @@ namespace Algo_2022_WinterVacation
         //static int treeNum = 0;
         //static List<TreeNode> nodeList = new List<TreeNode>();
 
-        class TreeNode<T>
+        class TreeNode<T> : IComparable
         {
+            public int priority = 0;
             public T data;
             public TreeNode<T> left;
             public TreeNode<T> right;
 
-            public bool CheckFullChild()
+            public int CompareTo(object obj)
             {
-                return (left != null && right != null);
+                return (obj as TreeNode<T>).priority.CompareTo(priority);
             }
         }
 
-        class BinaryTree<T>
+        class PriorityQueue<T>
         {
             public TreeNode<T> rootNode = null;
-            List<TreeNode<T>> nodes = new List<TreeNode<T>>();
+            List<List<TreeNode<T>>> nodes = new List<List<TreeNode<T>>>();
 
-            public void AddNode(TreeNode<T> node)
-            {
-                if (rootNode == null)
-                {
-                    rootNode = node;
-                }
-                else
-                {
-                    AddNodeToTree(TreeNode<T>, node);
-                }
-                nodes.Add(node);
-            }
+            int curLevel = 0;
 
             public void PreOrderTraversal(TreeNode<T> node)
             {
@@ -118,54 +108,138 @@ namespace Algo_2022_WinterVacation
                 PreOrderTraversal(node.right);
             }
 
-            private void AddNodeToTree(TreeNode<T> parent, TreeNode<T> curNode)
+            public void PrintAll()
+            {
+                for (int level = 0; level < curLevel; level++)
+                {
+                    for (int nodeNum = 0; nodeNum < nodes[level].Count; nodeNum++)
+                    {
+                        Console.Write(" " + nodes[level][nodeNum].data + " ");
+                    }
+                    Console.WriteLine();
+                }
+            }
+
+            public void Enqueue(TreeNode<T> node, int priority)
+            {
+                node.priority = priority;
+
+                if (curLevel > 0) // 우선 루트가 아니면
+                {
+                    if(nodes.Count < curLevel + 1)
+                    {
+                        nodes.Add(new List<TreeNode<T>>());
+                    }
+
+                    if(nodes[curLevel].Count >= GetSqureNum(2, curLevel)) // 현재 레벨이 최고 개수라면 아래 레벨로
+                    {
+                        curLevel++;
+                        Enqueue(node, priority);
+                    }
+                    else // 아니라면 그냥 지금 레벨에
+                    {
+                        nodes[curLevel].Add(node);  
+                    }
+                }
+                else
+                {
+                    rootNode = node;
+                    nodes.Add(new List<TreeNode<T>>() { node });
+                    curLevel++;
+                }
+            }
+            
+            /// <summary>
+            /// 맨위의 출력합니다.
+            /// </summary>
+            /// <returns></returns>
+            public TreeNode<T> Dequeue()
+            {
+                TreeNode<T> result = nodes[0][0];
+                nodes[0].Remove(result);
+
+                List<TreeNode<T>> tempList = GetAllNodes();
+                nodes.Clear();
+                curLevel = 0;
+                tempList.ForEach(x => Enqueue(x, x.priority));
+                MakeTree();
+
+                return result;
+            }
+
+            private List<TreeNode<T>> GetAllNodes()
+            {
+                List<TreeNode<T>> result = new List<TreeNode<T>>();
+                
+                nodes.ForEach(item =>
+                {
+                    item.ForEach(item =>
+                    {
+                        result.Add(item);
+                    });
+                });
+
+                return result;
+            }
+
+            public void MakeTree()
             {
 
-                if (parent.left == null) // 만약 부모의 왼쪽이 비어있다면
+                if (nodes[0][0] != null)
                 {
-                    parent.left = curNode;
-                }
-                else if (parent.right == null) // 오른쪽이 비어있다면
-                {
-                    parent.right = curNode;
-                }
-                else // 양쪽 다 차있으면
-                {
-                    if (!parent.left.CheckFullChild()) // 만약 왼쪽의 자식 자리가 비어있으면
+                    for (int level = 1; level < curLevel + 1; level++) // curLevel은 0부터 시작했으니까 이렇게 쓰려면 1 더해야함 / 그리고 0은 스킵
                     {
-                        AddNodeToTree(parent.left, curNode);
-                    }
-                    else if (!parent.right.CheckFullChild())// 아니면
-                    {
-                        AddNodeToTree(parent.right, curNode);
-                    }
-                    else // 만약 양쪽 다 자식이 안 비어있으면
-                    {
-                        AddNodeToTree(parent.left, curNode);
+                        for (int nodeNum = 0; nodeNum < nodes[level].Count; nodeNum++)
+                        {
+                            if(nodeNum % 2 == 0)
+                            {
+                                nodes[level - 1][nodeNum / 2].left = nodes[level][nodeNum];
+                            }
+                            else
+                            {
+                                nodes[level - 1][nodeNum / 2].right = nodes[level][nodeNum];
+                            }
+                        }
                     }
                 }
+            }
+
+            private int GetSqureNum(int num, int count)
+            {
+                int result = num;
+
+                for (int i = 0; i < count - 1; i++)
+                {
+                    result *= num;
+                }
+
+                return result;
             }
         }
 
         static void Main(string[] args)
         {
-            BinaryTree<int> tree = new BinaryTree<int>();
-            tree.AddNode(new TreeNode<int>() { data = 10 });
-            tree.AddNode(new TreeNode<int>() { data = 20 });
-            tree.AddNode(new TreeNode<int>() { data = 30 });
-            tree.AddNode(new TreeNode<int>() { data = 40 });
-            tree.AddNode(new TreeNode<int>() { data = 50 });
-            tree.AddNode(new TreeNode<int>() { data = 60 });
-            tree.AddNode(new TreeNode<int>() { data = 70 });
-            //tree.AddNode(new TreeNode<int>() { data = 80 });
-            //tree.AddNode(new TreeNode<int>() { data = 90 });
-            //tree.AddNode(new TreeNode<int>() { data = 100 });
-            //tree.AddNode(new TreeNode<int>() { data = 110 });
-            //tree.AddNode(new TreeNode<int>() { data = 120 });
-            //tree.AddNode(new TreeNode<int>() { data = 130 });
-            //tree.AddNode(new TreeNode<int>() { data = 140 });
-            //tree.AddNode(new TreeNode<int>() { data = 150 });
-            tree.PreOrderTraversal(tree.rootNode);
+            PriorityQueue<int> queue = new PriorityQueue<int>();
+            queue.Enqueue(new TreeNode<int>() { data = 10 }, 1);
+            queue.Enqueue(new TreeNode<int>() { data = 20 }, 2);
+            queue.Enqueue(new TreeNode<int>() { data = 30 }, 3);
+            queue.Enqueue(new TreeNode<int>() { data = 40 }, 4);
+            queue.Enqueue(new TreeNode<int>() { data = 50 }, 5);
+            queue.Enqueue(new TreeNode<int>() { data = 60 }, 6);
+            queue.Enqueue(new TreeNode<int>() { data = 70 }, 7);
+            queue.Enqueue(new TreeNode<int>() { data = 80 }, 8);
+            queue.Enqueue(new TreeNode<int>() { data = 90 }, 9);
+            queue.Enqueue(new TreeNode<int>() { data = 100 }, 10);
+            queue.Enqueue(new TreeNode<int>() { data = 110 }, 11);
+            queue.Enqueue(new TreeNode<int>() { data = 120 }, 12);
+            queue.Enqueue(new TreeNode<int>() { data = 130 }, 13);
+            queue.Enqueue(new TreeNode<int>() { data = 140 }, 14);
+            queue.Enqueue(new TreeNode<int>() { data = 150 }, 15);
+            queue.MakeTree();
+            queue.PrintAll();
+            Console.WriteLine(queue.Dequeue().data);
+            queue.PrintAll();
+            // queue.PrintAll();
         }
     }
 }
